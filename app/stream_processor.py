@@ -2,6 +2,7 @@ import cv2
 import tempfile
 import uuid
 from ultralytics import YOLO
+from typing import Optional
 
 video_registry = {}
 
@@ -20,7 +21,7 @@ def save_temp_video(file_bytes: bytes) -> str:
     return uid
 
 
-def get_video_path(uid: str) -> str | None:
+def get_video_path(uid: str) -> Optional[str]:
     """
     Return the path of the video file registered by UUID.
     """
