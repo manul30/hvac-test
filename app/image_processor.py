@@ -1,9 +1,8 @@
 import numpy as np
 import cv2
-from ultralytics import YOLO
+from .model_loader import HVACDetector
 
-
-def process_image(file_bytes: bytes, model: YOLO) -> bytes:
+def process_image(file_bytes: bytes, model: HVACDetector) -> bytes:
     """
     Run YOLO on an image and return the annotated result as JPEG bytes.
 
@@ -14,19 +13,22 @@ def process_image(file_bytes: bytes, model: YOLO) -> bytes:
     Returns:
         JPEG-encoded annotated image as bytes.
     """
-    # Convert bytes to OpenCV image
     img_arr = np.frombuffer(file_bytes, np.uint8)
     image = cv2.imdecode(img_arr, cv2.IMREAD_COLOR)
 
-    # Run detection
-    results = model(image)
+    results = model.predict(image)
 
-    # Draw boxes on image
-    annotated = results[0].plot()
+    # Suponiendo que results contiene las cajas y clases detectadas
+    annotated = image.copy()
+    for box in results:  # Ajusta según el formato de salida de postprocess
+        x1, y1, x2, y2, conf, cls = box  # ejemplo: [x1, y1, x2, y2, conf, class]
+        cv2.rectangle(annotated, (int(x1), int(y1)), (int(x2), int(y2)), (0,255,0), 2)
+        cv2.putText(annotated, f"{int(cls)} {conf:.2f}", (int(x1), int(y1)-10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2)
 
-    # Convert back to JPEG bytes
     _, encoded = cv2.imencode(".jpg", annotated)
     return encoded.tobytes()
+
 
 
 #  Bytes Image -> Numpy Array -> OpenCV Image -> YOLO Model -> Annotated Image -> JPEG Bytes -> Return Bytes

@@ -37,8 +37,16 @@ def generate_stream(video_path: str, model: YOLO):
         if not ret:
             break
 
-        results = model(frame)
-        annotated = results[0].plot()
+        results = model.predict(frame)
+
+        # Suponiendo que results contiene las cajas y clases detectadas
+        annotated = frame.copy()
+        for box in results:  # Ajusta según el formato de salida de postprocess
+            x1, y1, x2, y2, conf, cls = box  # ejemplo: [x1, y1, x2, y2, conf, class]
+            cv2.rectangle(annotated, (int(x1), int(y1)), (int(x2), int(y2)), (0,255,0), 2)
+            label = cls + ": "+ str(conf)
+            cv2.putText(annotated, label, (int(x1), int(y1)-10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 2)
 
         ret, buffer = cv2.imencode(".jpg", annotated)
         if not ret:

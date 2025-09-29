@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 
 import io
 
-from .model_loader import load_models
+from .model_loader import load_models, HVACDetector
 from .image_processor import process_image
 from .stream_processor import generate_stream, save_temp_video, get_video_path
 
@@ -34,7 +34,7 @@ async def home(request: Request):
 
 @app.post("/detect/")
 async def detect(
-    file: UploadFile = File(...), model_type: str = Query("hvac", enum=["hvac","n"])
+    file: UploadFile = File(...), model_type: str = Query("hvac", enum=["hvac"])
 ):
     """
     Detect objects in an uploaded image or video using YOLO.
@@ -71,7 +71,7 @@ async def detect(
 
 
 @app.get("/video_stream/{uid}")
-async def video_stream(uid: str, model_type: str = Query("hvac", enum=["hvac","n"])):
+async def video_stream(uid: str, model_type: str = Query("hvac", enum=["hvac"])):
     """
     Stream annotated video frames as MJPEG.
 
