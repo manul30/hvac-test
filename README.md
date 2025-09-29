@@ -10,6 +10,7 @@
 -  [Training Process](#training)
 -  [REST API](#rest-api)
 -  [Installation](#Installation)
+-  [Demo](#Demo)
 
 ---
 ## EDA & Data Annotation
@@ -22,7 +23,7 @@ To label the data, I used Roboflow. Due to time restrictions, 500 images were la
 ---
 ## Training
 
-For the training process, the default hyperparameters provided by YOLO were used. The main reason for this choice is simplicity and time constraints: the goal of this task is to demonstrate a working object detector for HVAC units, not to achieve state-of-the-art performance.
+For the training process, the default hyperparameters provided by YOLOv11 nano were used. The main reason for this choice is simplicity and time constraints: the goal of this task is to demonstrate a working object detector for HVAC units, not to achieve state-of-the-art performance.
 
 >                  Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 2/2 1.5it/s 1.3s
 >                   all        100        246      0.802      0.649      0.715      0.563
@@ -32,98 +33,50 @@ For the training process, the default hyperparameters provided by YOLO were used
 >             vent-unit         21         26      0.831      0.758      0.828      0.673
 >Speed: 0.2ms preprocess, 2.9ms inference, 0.0ms loss, 2.6ms postprocess per image
 
-Above is a summary of some metrics in the training process. Overall, it has a good mAP50 which is the one ask in the task. However we can see that in some classes the score is higher than others. The one that is bad is the **vent** class, and this has a reason. That's because the quality of labels in this class was not the optimal. Since I assumed any flexible pipe that seems to be part of any ventilation system belong to this class, so it was difficult to find a pattern as seen in the figures here below.
+Above is a summary of some metrics in the training process. Overall, it has a good mAP50 which is the one ask in the task. However we can see that in some classes the score is higher than others. The one that is bad is the **vent** class, and this has a reason. That's because the quality of labels in this class was not the optimal. Since I assumed any flexible pipe that seems to be part of any ventilation system belong to this class, so it was difficult to find a pattern as seen in the figures here below in red bounding boxes.
 
 ![Ejemplo de clase vent](./assets/vent1.png)
 ![Ejemplo de clase vent](./assets/vent2.png)
 
+Moreover, here we can see some results metrics. From the graph below, losses decrease steadily and metrics improve without signs of overfitting. The model reaches mAP50 around 0.7 and mAP50-95 around 0.5, with precision/recall around 0.6. However, this could be improved with more labeled data, stronger data augmentation, or hyperparameter tuning (lr, batch size, epochs) to further boost precision and mAP50-95
+![results](./results/results.png)
+![conf_matrix](./results/confusion_matrix_normalized.png)
 
-Moreover, here we can see some results metrics.
 
+> **NOTE:** This model wasn't optimized neither transformed in onnx format since it has few parameters and, since, it meets real time requirement. This can be useful for further analysis in development, however it also requires to have install torch in the environment increasing the size of the container. So its a cost-balance problem. In this case, minimum requirement is performed and no further optmization isn't required.
 
 ---
 ## REST API
 
-For the API, FAST API was used. The base code for the API was in 
+For the API, FAST API was used. The base code for the API was in inspired by open-source [FastAPI + YOLO repositories on GitHub](https://github.com/Raafat-Nagy/YOLO-Object-Detection-App.git), adapting the structure to fit the requirements of this task.
+
+The API exposes two main endpoints:
+
+- `POST /detect/`: Accepts an image or video file and returns either an annotated image (JPEG) or a JSON with a video stream URL, depending on the file type.
+- `GET /video_stream/{uid}`: Streams annotated video frames as MJPEG, allowing real-time visualization of detections.
+
+Error handling is implemented to ensure clear feedback for invalid files, unsupported formats, or missing resources.
 
 ---
-## Getting Started
+## Installation
 
 1. **Clone this repo**
    ```bash
-   git clone https://github.com/Raafat-Nagy/YOLO-Object-Detection-App.git
-   cd YOLO-Object-Detection-App
-
-2. **Install dependencies**
-
-   ```bash
-   pip install -r requirements.txt
+   git clone https://github.com/manul30/hvac-test.git
+   cd hvac-test
    ```
-
-3. **Download YOLO models**
-   Put your models (e.g. `yolo11n.pt`) in the `models/` directory.
-   Get them from:
-   [Ultralytics Official Models](https://docs.ultralytics.com/models)
-
-4. **Run the app**
-
+2. **Build docker container**
    ```bash
-   uvicorn app.main:app --reload
+   docker compose up --build
    ```
-
-5. Open `http://127.0.0.1:8000` in your browser.
-
----
-
-## Project Structure
-
-```
-YOLO-Object-Detection-App/
-├── app/                # FastAPI backend
-│   ├── image_processor.py
-│   ├── main.py
-│   ├── model_loader.py
-│   └── stream_processor.py
-├── static/             # Frontend JS/CSS
-│   ├── script.js
-│   └── style.css
-├── templates/          # HTML template
-│   └── index.html
-├── models/             # YOLO .pt models
-│   ├── yolo11m
-│   ├── yolo11n
-│   └── yolo11s
-├── requirements.txt
-└── README.md
-```
-
 ---
 
 ## Demo
 
+When running the container, go to http://0.0.0.0:8000/
+
 📸 Here’s how it works:
 
-[![Watch the video](https://img.youtube.com/vi/ONM9z99RVaU/hqdefault.jpg)](https://youtu.be/ONM9z99RVaU)
+[![Watch the video](assets/test.mp4)]
 
----
 
-## Tech Stack
-
-* **FastAPI** – lightweight Python backend
-* **Ultralytics YOLO** – object detection engine
-* **JavaScript + HTML + CSS** – frontend
-* **Font Awesome** – icons
-
----
-
-## License
-
-This project is licensed under the [MIT License](https://choosealicense.com/licenses/mit/).
-
----
-
-## Contact
-
-Feel free to reach out or contribute via pull request or issue!
-
----
