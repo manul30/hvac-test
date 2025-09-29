@@ -77,6 +77,11 @@ When running the container, go to http://0.0.0.0:8000/
 
 📸 Here’s how it works:
 
-[![Watch the video](assets/test.mp4)]
+![Watch the video](assets/test.gif)
 
 
+## Extra thoughts
+
+These are just some ideas that came to mind while working on this evaluation. As a human, I found it quite difficult to recognize the different types of HVAC units in the images. I imagine it must be challenging for you as well, unless you specialize in something specific related to HVAC. I guess maybe you are interested in maintenance recognition or something about the labels, since those were present in the dataset.
+
+But I have a feeling that the ideal approach would be to use some kind of transformer-based model to detect or interpret the parts of each object. All the units look very similar, but there are small details that make each one different. I think with attention modules, you could build a model that can separate those essential parts that characterize each type of HVAC unit. Simple CNNs are probably not enough for this kind of fine-grained recognition.
